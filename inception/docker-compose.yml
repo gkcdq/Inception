@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  mariadb:
+    build: ./srcs/mariadb
+    container_name: mariadb
+    restart: always
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    env_file:
+      - .env
+    networks:
+      - wp-network
+
+  wordpress:
+    build: ./srcs/wordpress
+    container_name: wordpress
+    restart: always
+    user: "${UID}:${GID}"
+    volumes:
+      - /home/tmilin/data/wordpress_data:/var/www/html
+    env_file:
+      - .env
+    networks:
+      - wp-network
+    depends_on:
+      - mariadb
+
+  nginx:
+    build: ./srcs/nginx
+    container_name: nginx
+    restart: always
+    user: "${UID}:${GID}"
+    ports:
+      - "8080:443"
+    networks:
+      - wp-network
+    depends_on:
+      - wordpress
+    volumes:
+      - /home/tmilin/data/wordpress_data:/var/www/html:ro
+      - /home/tmilin/data/nginx_ssl/cert.pem:/etc/ssl/certs/cert.pem:ro
+      - /home/tmilin/data/nginx_ssl/key.pem:/etc/ssl/private/key.pem:ro
+
+networks:
+  wp-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+
+
