@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  nginx:
+    build: ./nginx
+    container_name: nginx
+    volumes:
+      # CORRECTION APPLIQUÉE ICI : Utilisation du double point (:)
+      - ./ssl-cert.pem:/etc/ssl/certs/ssl-cert.pem
+      - ./ssl-cert.key:/etc/ssl/private/ssl-cert.key 
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app_net
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
+    restart: always
+
+
+  mariadb:
+    build: ./mariadb
+    container_name: mariadb
+    volumes:
+      - wordpress_db:/var/lib/mysql
+    networks:
+      - app_net
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=wordpress
+    restart: always
+
+  wordpress:
+    image: wordpress:fpm # Si vous avez un Dockerfile pour WordPress, remplacez par build: ./wordpress
+    container_name: wordpress
+    volumes:
+      # Mieux vaut utiliser un volume nommé ici aussi pour la persistance des plugins/uploads
+      - wordpress_files:/var/www/html 
+    networks:
+      - app_net
+    environment:
+      - WORDPRESS_DB_HOST=mariadb:3306
+      - WORDPRESS_DB_NAME=wordpress
+      - WORDPRESS_DB_USER=${MYSQL_USER}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
+    restart: always
+
+volumes:
+  wordpress_db:
+  wordpress_files: # Ajout pour une meilleure persistance des fichiers WordPress
+
+networks:
+  app_net:
+    driver: bridge
