@@ -1,18 +1,19 @@
-# Utiliser l'image officielle MariaDB
-FROM mariadb:latest
+FROM debian:bookworm
+RUN apt-get update && apt-get install -y \
+    mariadb-server \
+    mariadb-client \
+    && rm -rf /var/lib/apt/lists/*
+# Create required directories and set permissions
+RUN mkdir -p /run/mysqld /var/lib/mysql \
+    && chown -R mysql:mysql /run/mysqld /var/lib/mysql
+# Initialize MariaDB data directory
+RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql --auth-root-authentication-method=normal --skip-test-db
+# Allow connections
+RUN sed -i 's/127.0.0.1/0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf
+# Copy and set up the entrypoint script
+COPY ./mariadb.sh /usr/local/bin/mariadb.sh
+RUN chmod +x /usr/local/bin/mariadb.sh
 
-# Copier des fichiers de configuration personnalisés si nécessaire (facultatif)
-# COPY ./my_custom_config.cnf /etc/mysql/conf.d/
-
-# Variables d'environnement pour MariaDB (si elles ne sont pas déjà dans docker-compose)
-# ENV MYSQL_ROOT_PASSWORD=rootpassword
-# ENV MYSQL_DATABASE=wordpress
-# ENV MYSQL_USER=wordpress_user
-# ENV MYSQL_PASSWORD=wordpress_password
-
-# Exposer le port 3306 pour la communication avec MariaDB
 EXPOSE 3306
-
-# Note: CMD ["mysqld"] n'est pas nécessaire si tu utilises l'image officielle MariaDB
-# L'image officielle MariaDB gère déjà cela.
-
+ENTRYPOINT ["/usr/local/bin/mariadb.sh"]
+CMD ["/usr/bin/mysqld_safe", "--datadir=/var/lib/mysql"]
