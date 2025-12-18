@@ -17,4 +17,5 @@ RUN chmod 777 /etc/ssl/private/nginx.key
 
 COPY ./nginx.conf /etc/nginx/nginx.conf
 EXPOSE 443
+# deamon off c'est pour lancer Nginx en arriere plan et -g c'est pour la configuration de type global (terminal)
 CMD ["nginx", "-g", "daemon off;"]

@@ -12,12 +12,12 @@ if [ ! -f "$CONFIG_FILE" ]; then
 	# Download WordPress core
 	wp core download --allow-root
 
-	# Wait for MariaDB to be ready
+	# Attend MariaDB pour etre pret
 	until mysqladmin ping -h mariadb -u${MYSQL_USER} -p${MYSQL_PASSWORD} --silent; do
 		sleep 1
 	done
 
-	# Create wp-config.php
+	# Cree wp-config.php
 	wp config create \
 		--dbname="${MYSQL_DATABASE}" \
 		--dbuser="${MYSQL_USER}" \
@@ -35,7 +35,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
 		--skip-email \
 		--allow-root
 
-	# Create an additional user
+	# Cree un additional user
 	wp user create \
 		"${WP_USER}" "${WP_USER_EMAIL}" \
 		--role=author \

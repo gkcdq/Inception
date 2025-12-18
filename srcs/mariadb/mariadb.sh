@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Initialize database only if not already present
+# Initialise la data base si elle nexiste pas encore
 if [ ! -d "/var/lib/mysql/$MYSQL_DATABASE" ]; then
     echo "[TMILIN] Initializing MariaDB database..."
 
@@ -24,9 +24,8 @@ if [ ! -d "/var/lib/mysql/$MYSQL_DATABASE" ]; then
     GRANT ALL PRIVILEGES ON \`${MYSQL_DATABASE}\`.* TO '${MYSQL_USER}'@'%';
     FLUSH PRIVILEGES;
 MYSQL_SCRIPT
-
     echo "[TMILIN] Database initialization complete. Killing temporary process."
-
+    
     # Tuer proprement le processus MariaDB démarré en arrière-plan
     kill -TERM $MYSQL_PID
     wait $MYSQL_PID # Attendre qu'il soit complètement arrêté pour éviter la corruption

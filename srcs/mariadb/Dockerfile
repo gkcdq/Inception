@@ -3,14 +3,14 @@ RUN apt-get update && apt-get install -y \
     mariadb-server \
     mariadb-client \
     && rm -rf /var/lib/apt/lists/*
-# Create required directories and set permissions
+# cree les fichiers necessaire et 'set' les permissions
 RUN mkdir -p /run/mysqld /var/lib/mysql \
     && chown -R mysql:mysql /run/mysqld /var/lib/mysql
-# Initialize MariaDB data directory
+# initialise les data de MariaDB
 RUN mysql_install_db --user=mysql --datadir=/var/lib/mysql --auth-root-authentication-method=normal --skip-test-db
-# Allow connections
+# Autorise les connections
 RUN sed -i 's/127.0.0.1/0.0.0.0/' /etc/mysql/mariadb.conf.d/50-server.cnf
-# Copy and set up the entrypoint script
+# copy et commence le script d'entre
 COPY ./mariadb.sh /usr/local/bin/mariadb.sh
 RUN chmod +x /usr/local/bin/mariadb.sh
 
