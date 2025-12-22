@@ -32,3 +32,14 @@ fi
 
 # Démarrer MariaDB correctement en mode foreground (PID 1)
 exec "$@"
+
+# pour login dans la database de mariadb
+#{
+#   docker exec -it mariadb mysql -utmilin -p
+#   {
+#       (une fois dans mariadb)
+#       SHOW DATABASES;
+#       USE wordpress;
+#       SHOW TABLES;
+#   }
+#}

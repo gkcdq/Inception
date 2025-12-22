@@ -7,15 +7,15 @@ all: start
 start:
 	sudo $(MKDIR_CMD) $(HOST_DB_DIR)
 	sudo $(MKDIR_CMD) $(HOST_WP_DIR)
-	sudo docker compose -f $(COMPOSE_FILE) up --build -d
+	sudo docker compose -f srcs/docker-compose.yml up --build -d
 
 # Stop services
 stop:
-	sudo docker compose -f $(COMPOSE_FILE) stop
+	sudo docker compose -f srcs/docker-compose.yml stop
 
 # Stop and remove containers
 down:
-	sudo docker compose -f $(COMPOSE_FILE) down
+	sudo docker compose -f srcs/docker-compose.yml down
 
 # Clean unused containers
 clean: down
