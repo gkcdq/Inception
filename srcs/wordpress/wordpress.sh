@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Define path to WordPress installation
+# Defini le chemin pour l'instalation de WordPress
 WP_PATH=/var/www/html
 CONFIG_FILE="$WP_PATH/wp-config.php"
 
 if [ ! -f "$CONFIG_FILE" ]; then
 
-	# Move to wordpress folder
+	# cd dans les fichiers wordpress
 	cd "$WP_PATH"
 
-	# Download WordPress core
+	# telecharge le core de WordPress
 	wp core download --allow-root
 
 	# Attend MariaDB pour etre pret
@@ -25,7 +25,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
 		--dbhost="mariadb" \
 		--allow-root
 
-	# Install WordPress
+	# Instale WordPress
 	wp core install \
 		--url="${DOMAIN_NAME}" \
 		--title="${WP_TITLE}" \

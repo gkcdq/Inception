@@ -1,27 +1,12 @@
 version: "3.8"
 
 services:
-  nginx:
-    build: ./nginx
-    container_name: nginx
-    volumes:
-      - wordpress_files:/var/www/html
-      # - ./ssl-cert.pem:/etc/ssl/certs/ssl-cert.pem
-      # - ./ssl-cert.key:/etc/ssl/private/ssl-cert.key 
-    ports:
-      - "443:443"
-    env_file:
-      - .env
-    networks:
-      - app_net
-    restart: always
-
-
   mariadb:
-    build: ./mariadb
     container_name: mariadb
+    build: ./mariadb
+    image: mariadb
     volumes:
-      - wordpress_db:/var/lib/mysql
+      - mariadb_v:/var/lib/mysql
     env_file:
       - .env
     networks:
@@ -29,10 +14,30 @@ services:
     restart: always
 
   wordpress:
-    build: ./wordpress
     container_name: wordpress
+    build: ./wordpress
+    image: wordpress
+    depends_on:
+      - mariadb
     volumes:
-      - wordpress_files:/var/www/html
+      - wordpress_v:/var/www/html
+    env_file:
+      - .env
+    networks:
+      - app_net
+    restart: always
+
+  nginx:
+    container_name: nginx
+    build: ./nginx
+    image: nginx
+    depends_on:
+      - wordpress
+    # Expose HTTPS port to the host
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_v:/var/www/html
     env_file:
       - .env
     networks:
@@ -40,8 +45,18 @@ services:
     restart: always
 
 volumes:
-  wordpress_db:
-  wordpress_files: # Ajout pour une meilleure persistance des fichiers WordPress
+  mariadb_v:
+    driver: local
+    driver_opts: # driver_opts utiliser ici pour configurer le Bind Mount
+      type: none
+      device: /home/tmilin/data/mysql #Docker va chercher ou cree ce dossier sur le disque pour stocker les donnees
+      o: bind # o pour "option", bind est l'option qui fait que ca stock en temps reel les donneees
+  wordpress_v:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/tmilin/data/wordpress
+      o: bind
 
 networks:
   app_net:

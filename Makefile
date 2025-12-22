@@ -1,33 +1,37 @@
-DOCKER_COMPOSE := docker-compose
-COMPOSE_FILE := srcs/docker-compose.yml
-PROJECT_NAME := inception
-VOLUME_NAME := wordpress_db
-# =====================
-# COMMANDES PRINCIPALES
-# =====================
-all: up # make up : Construit ou met à jour les images, puis demarre les conteneurs, c'est la commande principale pour lancer le projet.
-up: build
-	sudo $(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+include srcs/.env
 
-# make build : Force la reconstruction des images (nginx, mariaDB et wordpresssss)
-build:
-	sudo $(DOCKER_COMPOSE) -f $(COMPOSE_FILE) build
+# Default target
+all: start
 
-# make down : Arrete et supprime les conteneurs et les réseaux
+# Start services
+start:
+	sudo $(MKDIR_CMD) $(HOST_DB_DIR)
+	sudo $(MKDIR_CMD) $(HOST_WP_DIR)
+	sudo docker compose -f $(COMPOSE_FILE) up --build -d
+
+# Stop services
+stop:
+	sudo docker compose -f $(COMPOSE_FILE) stop
+
+# Stop and remove containers
 down:
-	sudo $(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down
+	sudo docker compose -f $(COMPOSE_FILE) down
 
-# make restart : Redemarre l'ensemble des services
-restart: down up
+# Clean unused containers
+clean: down
+	sudo docker container prune --force
 
-# make fclean (Nettoyage Force/Complet)  Arrete tout, supprime les conteneurs, 
-# les volumes (-v) et les images (-rmi all).
-fclean: down
-	sudo $(DOCKER_COMPOSE) -f $(COMPOSE_FILE) down -v --rmi all --remove-orphans
+# Full clean: remove volumes, images, and host data
+fclean: clean
+	sudo $(REMOVE_CMD) $(HOST_DB_DIR)
+	sudo $(REMOVE_CMD) $(HOST_WP_DIR)
+	sudo docker system prune --all --force
+	-@docker volume inspect $(DOCKER_DB_VOLUME) >/dev/null 2>&1 && sudo docker volume rm $(DOCKER_DB_VOLUME)
+	-@docker volume inspect $(DOCKER_WP_VOLUME) >/dev/null 2>&1 && sudo docker volume rm $(DOCKER_WP_VOLUME)
 
-# make clean : Supprime les volumes persistant de la base de données
-clean:
-	@echo "Suppression des volumes Docker..."
-	sudo docker volume rm $(PROJECT_NAME)_$(VOLUME_NAME) || true
 
-.PHONY: all up build down restart logs ps stop fclean clean
+# Rebuild everything
+re: fclean all
+
+# Declare phony targets
+.PHONY:		all volume up down clean fclean re
